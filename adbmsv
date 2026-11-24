@@ -1,0 +1,423 @@
+ADBMS Practical Viva – Important Questions & Answers
+1. Basic DBMS Questions
+Q1. What is DBMS?
+
+DBMS stands for Database Management System. It is software used to store, manage, and retrieve data.
+
+Q2. What is a database?
+
+A database is an organized collection of data.
+
+Q3. What is RDBMS?
+
+RDBMS stands for Relational Database Management System. It stores data in tables consisting of rows and columns.
+
+Q4. What is the difference between DBMS and RDBMS?
+- DBMS manages data.
+- RDBMS manages data using related tables.
+- RDBMS supports relationships between tables.
+Q5. What is SQL?
+
+SQL stands for Structured Query Language. It is used to communicate with databases.
+
+Q6. What is a table?
+
+A table is a collection of related data arranged in rows and columns.
+
+Q7. What is a primary key?
+
+A primary key uniquely identifies each record in a table. It cannot contain duplicate or NULL values.
+
+Q8. What is a foreign key?
+
+A foreign key is a column that creates a relationship between two tables.
+
+Q9. What is a candidate key?
+
+A candidate key is a column or combination of columns that can uniquely identify a record.
+
+Q10. What is a composite key?
+
+A key created using two or more columns is called a composite key.
+
+Q11. What is NULL?
+
+NULL means a value is missing or unknown. It is not the same as zero.
+
+Q12. What is a constraint?
+
+Constraints are rules applied to table columns to maintain data accuracy.
+
+Examples:
+- PRIMARY KEY
+- FOREIGN KEY
+- UNIQUE
+- NOT NULL
+- CHECK
+- DEFAULT
+2. SQL Basic Questions
+Q13. What are the different types of SQL commands?
+
+There are five main types:
+Type	Full form	Example
+DDL	Data Definition Language	CREATE, ALTER, DROP
+DML	Data Manipulation Language	INSERT, UPDATE, DELETE
+DQL	Data Query Language	SELECT
+DCL	Data Control Language	GRANT, REVOKE
+TCL	Transaction Control Language	COMMIT, ROLLBACK
+
+Q14. What is the difference between DELETE, DROP and TRUNCATE?
+- DELETE: Deletes selected rows or all rows.
+- DROP: Deletes the complete table.
+- TRUNCATE: Deletes all rows but keeps the table structure.
+Q15. What is the difference between WHERE and HAVING?
+- WHERE filters individual rows.
+- HAVING filters groups after GROUP BY.
+Q16. What is GROUP BY?
+
+GROUP BY is used to group rows having the same values.
+
+Q17. What is ORDER BY?
+
+ORDER BY is used to sort records in ascending or descending order.
+
+Q18. What is DISTINCT?
+
+DISTINCT removes duplicate values from the result.
+
+Q19. What is a JOIN?
+
+JOIN is used to combine data from two or more tables.
+
+Q20. What are the types of JOIN?
+1. INNER JOIN
+2. LEFT JOIN
+3. RIGHT JOIN
+4. CROSS JOIN
+5. FULL OUTER JOIN (not directly supported in MySQL; can be simulated using UNION).
+Q21. What is a subquery?
+
+A query written inside another SQL query is called a subquery.
+
+Q22. What is an aggregate function?
+
+Aggregate functions perform calculations on multiple rows.
+
+Examples:
+- COUNT()
+- SUM()
+- AVG()
+- MIN()
+- MAX()
+3. Transaction Management and ACID Properties
+Very important for practical viva
+Q23. What is a transaction?
+
+A transaction is a group of database operations performed as one single unit.
+
+Example: Transferring money from one bank account to another.
+
+Q24. What are ACID properties?
+
+ACID stands for:
+- A – Atomicity: All operations happen or none happen.
+- C – Consistency: Database remains correct.
+- I – Isolation: Transactions do not interfere with each other.
+- D – Durability: Once committed, changes are permanently saved.
+Q25. What is COMMIT?
+
+COMMIT permanently saves the changes made by a transaction.
+
+Q26. What is ROLLBACK?
+
+ROLLBACK cancels the changes made by a transaction before they are committed.
+
+Q27. What is SAVEPOINT?
+
+SAVEPOINT creates a point inside a transaction to which we can roll back later.
+
+Q28. What is concurrency control?
+
+Concurrency control manages multiple transactions running at the same time without creating data problems.
+
+Q29. What is a deadlock?
+
+A deadlock happens when two or more transactions wait for each other and cannot continue.
+
+Q30. What is a dirty read?
+
+A dirty read happens when one transaction reads data that another transaction has not committed yet.
+
+Q31. What is isolation level?
+
+Isolation level defines how much one transaction is protected from changes made by other transactions.
+
+Common isolation levels:
+1. Read Uncommitted
+2. Read Committed
+3. Repeatable Read
+4. Serializable
+5. Distributed Database Questions
+Important ADBMS topic
+Q32. What is a distributed database?
+
+A distributed database is a database in which data is stored at multiple locations connected through a network.
+
+Q33. What is a distributed DBMS?
+
+A Distributed DBMS manages data stored across multiple computers or locations.
+
+Q34. What are the advantages of a distributed database?
+- Better availability.
+- Faster local access.
+- Data sharing.
+- Improved reliability.
+- Easy scalability.
+Q35. What is data fragmentation?
+
+Data fragmentation means dividing a large database into smaller parts and storing them at different locations.
+
+Q36. What are the types of fragmentation?
+1. Horizontal fragmentation – Dividing rows.
+2. Vertical fragmentation – Dividing columns.
+3. Hybrid fragmentation – Combination of horizontal and vertical fragmentation.
+Q37. What is data replication?
+
+Data replication means keeping copies of the same data at multiple locations.
+
+Q38. What is data allocation?
+
+Data allocation means deciding where different parts of a database should be stored.
+
+Q39. What is transparency in a distributed database?
+
+Transparency means users can access distributed data without knowing where it is physically stored.
+
+Q40. What is a distributed transaction?
+
+A distributed transaction is a transaction that involves multiple databases or servers.
+
+Q41. What is Two-Phase Commit (2PC)?
+
+Two-Phase Commit is a protocol used to ensure that all participating databases either COMMIT or ROLLBACK a transaction.
+
+It has two phases:
+1. Prepare phase – All participants check whether they are ready.
+2. Commit phase – The coordinator tells everyone to commit or abort.
+Q42. What is a coordinator in 2PC?
+
+The coordinator manages the transaction and communicates with all participating databases.
+
+Q43. What is transaction recovery?
+
+Transaction recovery restores the database to a correct state after a failure.
+
+Q44. Why is recovery important?
+
+It prevents data loss and maintains database consistency after system failures.
+5. Database Partitioning
+Q45. What is partitioning?
+
+Partitioning means dividing a large table into smaller parts to improve database management and performance.
+
+Q46. What are the types of partitioning?
+1. Range partitioning
+2. List partitioning
+3. Hash partitioning
+4. Key partitioning
+Q47. What is range partitioning?
+
+Range partitioning divides data based on a range of values.
+
+Example: Dividing employee records according to salary ranges.
+
+Q48. What is list partitioning?
+
+List partitioning divides data based on specific values.
+
+Example: Separate partitions for Pune, Mumbai and Delhi.
+
+Q49. What is hash partitioning?
+
+Hash partitioning uses a hash function to distribute records among partitions.
+
+Q50. What is the advantage of partitioning?
+
+It improves query performance and makes large tables easier to manage.
+6. Data Warehousing and OLAP
+Frequently asked theory questions
+Q51. What is a Data Warehouse?
+
+A data warehouse is a central place where data from different sources is stored for analysis and decision-making.
+
+Q52. What is OLTP?
+
+OLTP stands for Online Transaction Processing. It manages daily transactions.
+
+Example: Banking transactions and online shopping.
+
+Q53. What is OLAP?
+
+OLAP stands for Online Analytical Processing. It is used to analyze large amounts of data and make decisions.
+
+Example: Analyzing yearly sales reports.
+
+Q54. Difference between OLTP and OLAP?
+OLTP	OLAP
+Handles daily transactions	Handles data analysis
+Frequent insert and update	Mostly read operations
+Current data	Historical data
+Used by operational staff	Used by analysts and managers
+
+Q55. What is a fact table?
+
+A fact table stores numerical information such as sales, quantity and profit.
+
+Q56. What is a dimension table?
+
+A dimension table stores descriptive information such as product name, customer name and location.
+
+Q57. What is a Star Schema?
+
+Star Schema is a data warehouse design where one fact table is connected directly to multiple dimension tables.
+
+
+
+
+
+
+
+
+medium.com
+
+
+Q58. What is a Snowflake Schema?
+
+Snowflake Schema is a data warehouse design where dimension tables are further divided into smaller related tables.
+
+
+
+
+
+
+
+
+medium.com
+
+
+Q59. Difference between Star Schema and Snowflake Schema?
+- Star Schema has simpler structure and less normalization.
+- Snowflake Schema has more normalized dimension tables.
+- Star Schema is generally easier to understand.
+- Snowflake Schema reduces data redundancy.
+Q60. What is a data cube?
+
+A data cube is a multidimensional representation of data used for analysis.
+
+Q61. What are OLAP operations?
+1. Roll-up – Summarizes data.
+2. Drill-down – Shows more detailed data.
+3. Slice – Selects one dimension value.
+4. Dice – Selects a specific data range.
+5. Pivot – Rotates the view of data.
+6. Normalization
+Q62. What is normalization?
+
+Normalization is the process of organizing data into tables to reduce data duplication and improve data consistency.
+
+Q63. What is denormalization?
+
+Denormalization combines data to improve read performance, sometimes by introducing redundancy.
+
+Q64. What is 1NF?
+
+First Normal Form means every column should contain atomic (single) values.
+
+Q65. What is 2NF?
+
+Second Normal Form means the table must be in 1NF and have no partial dependency.
+
+Q66. What is 3NF?
+
+Third Normal Form means the table must be in 2NF and have no transitive dependency.
+
+Q67. What is data redundancy?
+
+Data redundancy means storing the same data multiple times.
+
+Q68. What is functional dependency?
+
+Functional dependency means one attribute determines another attribute.
+
+Example: Student_ID determines Student_Name.
+8. NoSQL and MongoDB
+Q69. What is NoSQL?
+
+NoSQL is a type of database that stores data in formats other than traditional relational tables.
+
+Q70. What is MongoDB?
+
+MongoDB is a NoSQL database that stores data in document format.
+
+Q71. What is a collection?
+
+A collection is a group of documents in MongoDB. It is similar to a table in SQL.
+
+Q72. What is a document?
+
+A document is a single record stored in BSON format in MongoDB.
+
+Q73. What is BSON?
+
+BSON stands for Binary JSON. It is the binary representation of JSON-like documents.
+
+Q74. What is the difference between SQL and NoSQL?
+SQL	NoSQL
+Stores data in tables	Stores data in different formats
+Fixed schema generally	Flexible schema generally
+Uses SQL	Uses database-specific queries
+Example: MySQL	Example: MongoDB
+
+Q75. What is indexing?
+
+Indexing helps the database find records faster without scanning the entire collection or table.
+
+Q76. What is aggregation?
+
+Aggregation processes data and produces calculated results.
+
+Q77. What is sharding?
+
+Sharding means distributing a large database across multiple servers to handle large amounts of data.
+
+9. Practical SQL Questions
+Your external examiner may also ask you to write or explain simple SQL commands.
+Question	SQL command
+Create database	CREATE DATABASE college;
+Create table	CREATE TABLE student(id INT, name VARCHAR(30));
+Insert record	INSERT INTO student VALUES(1,'Rahul');
+Display records	SELECT * FROM student;
+Update record	UPDATE student SET name='Amit' WHERE id=1;
+Delete record	DELETE FROM student WHERE id=1;
+Add column	ALTER TABLE student ADD age INT;
+Count records	SELECT COUNT(*) FROM student;
+Find maximum	SELECT MAX(id) FROM student;
+Sort records	SELECT * FROM student ORDER BY id DESC;
+
+10. Extra Important Questions for External Viva
+These are short questions that examiners sometimes ask to check your basic understanding.
+Question	Simple answer
+What is a view?	A virtual table based on an SQL query.
+What is a trigger?	A block of SQL code that executes automatically on a specified event.
+What is a stored procedure?	A saved SQL program that can be executed when needed.
+What is a cursor?	It processes query results one row at a time.
+What is an index?	A structure that speeds up data searching.
+What is a schema?	The logical structure of a database.
+What is a backup?	A copy of database data used for recovery.
+What is data integrity?	Maintaining the accuracy and correctness of data.
+What is a log file?	A record of database transactions and changes.
+What is a checkpoint?	A recovery point that helps reduce recovery time.
+What is a B-tree?	A balanced tree data structure used for indexing.
+What is CAP theorem?	A distributed system can guarantee at most two of Consistency, Availability and Partition Tolerance simultaneously.
+What is database scalability?	The ability to handle increasing amounts of data and users.
+What is a database server?	A computer or system that manages database operations.
