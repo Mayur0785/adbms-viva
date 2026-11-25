@@ -1,0 +1,506 @@
+                                      SET 4
+ Q.1. Create a CUSTOMER table using range or hash partitioning based on
+ customer city or customer ID. Perform DML operations such as INSERT,
+ UPDATE and DELETE on the partitioned table. Retrieve and display
+ records from each partition separately using suitable SQL queries.
+ Explain how partitioning improves data management.
+
+ANS:
+We will use RANGE PARTITIONING based on Customer_ID in MySQL.
+
+1. Complete SQL Code
+
+Step 1: Create database and CUSTOMER table
+ CREATE DATABASE CustomerDB;
+ USE CustomerDB;
+ CREATE TABLE CUSTOMER (
+     Customer_ID INT NOT NULL,
+     Customer_Name VARCHAR(50),
+     City VARCHAR(50),
+     PRIMARY KEY (Customer_ID)
+ )
+ PARTITION BY RANGE (Customer_ID) (
+     PARTITION P0 VALUES LESS THAN (100),
+     PARTITION P1 VALUES LESS THAN (200),
+     PARTITION P2 VALUES LESS THAN (300),
+     PARTITION P3 VALUES LESS THAN (MAXVALUE)
+ );
+
+
+Step 2: Insert records
+ INSERT INTO CUSTOMER VALUES
+ (10, 'Rahul', 'Pune'),
+ (50, 'Amit', 'Mumbai'),
+ (120, 'Priya', 'Delhi'),
+ (150, 'Sneha', 'Pune'),
+ (220, 'Rohan', 'Nashik'),
+ (250, 'Neha', 'Mumbai'),
+ (350, 'Karan', 'Delhi');
+
+
+Step 3: Display all records
+ SELECT * FROM CUSTOMER;
+
+
+Step 4: Update a record
+ UPDATE CUSTOMER
+ SET City = 'Nagpur'
+ WHERE Customer_ID = 10;
+Step 5: Delete a record
+ DELETE FROM CUSTOMER
+ WHERE Customer_ID = 50;
+
+
+Step 6: Display records from each partition separately
+ SELECT * FROM CUSTOMER PARTITION (P0);
+ SELECT * FROM CUSTOMER PARTITION (P1);
+ SELECT * FROM CUSTOMER PARTITION (P2);
+ SELECT * FROM CUSTOMER PARTITION (P3);
+
+
+2. Partition Explanation
+The CUSTOMER table is divided into four partitions based on Customer_ID.
+
+ Partition                                       Customer ID Range
+
+ P0                                              Less than 100
+
+ P1                                              100 to 199
+
+ P2                                              200 to 299
+
+ P3                                              300 and above
+
+
+Partition structure
+
+CUSTOMER TABLE
+
+P0
+
+ID below 100
+
+P1
+
+ID 100-199
+
+P2
+
+ID 200-299
+
+P3
+
+ID 300+
+
+3. How Partitioning Improves Data Management
+      1. Faster data retrieval: MySQL can search only the required partitions when partition
+      pruning applies.
+      2. Easy management: Large tables are divided into smaller parts.
+      3. Better performance: It can reduce the amount of data scanned for suitable queries.
+      4. Easy maintenance: Individual partitions can be managed separately.
+      5. Organized data: Records are stored according to customer ID ranges.
+4. Conclusion
+Partitioning divides a large CUSTOMER table into smaller parts. It makes data retrieval,
+organization and management easier and can improve query performance.
+Important: In MySQL, when using RANGE partitioning, every column used in the partitioning
+expression must be included in every unique key. Here, Customer_ID is the primary key and
+also the partitioning column, so the table definition is valid.
+
+ Q. 2. Explain distributed transactions with a simple ATM cash-withdrawal
+ example involving account verification and balance update. Describe the
+ purpose of COMMIT and ROLLBACK and explain the importance of
+ transaction recovery.
+ -- Step 1: Create databases
+ CREATE DATABASE IF NOT EXISTS Bank;
+ CREATE DATABASE IF NOT EXISTS ATM;
+
+ -- Step 2: Create Bank account table
+ CREATE TABLE Bank.account (
+     acc_no INT PRIMARY KEY,
+     pin INT,
+     balance INT
+ );
+
+ -- Step 3: Create ATM transaction log table
+ CREATE TABLE ATM.atm_log (
+     log_id INT PRIMARY KEY,
+     acc_no INT,
+     amount INT,
+     type VARCHAR(15)
+ );
+
+ -- Step 4: Insert account details
+ INSERT INTO Bank.account
+ VALUES (1, 1234, 10000);
+
+ -- Step 5: Account verification
+ SELECT *
+ FROM Bank.account
+ WHERE acc_no = 1 AND pin = 1234;
+
+ -- Step 6: Start transaction
+ START TRANSACTION;
+
+ -- Step 7: Deduct withdrawal amount
+ UPDATE Bank.account
+ SET balance = balance - 2000
+ WHERE acc_no = 1 AND balance >= 2000;
+
+ -- Store whether the balance was updated
+ SET @updated = ROW_COUNT();
+
+ -- Step 8: Insert ATM log only if balance was updated
+ INSERT INTO ATM.atm_log
+ SELECT 1, 1, 2000, 'WITHDRAW'
+ WHERE @updated = 1;
+
+ -- Step 9: Display records before COMMIT
+ SELECT * FROM Bank.account;
+ SELECT * FROM ATM.atm_log;
+ -- Step 10: Save transaction
+ COMMIT;
+
+ -- Step 11: Display final records
+ SELECT * FROM Bank.account;
+ SELECT * FROM ATM.atm_log;
+
+[TABLE - Purpose of COMMIT and ROLLBACK: this table is an image in the PDF, transcribed here]
+
+                 COMMIT                                          ROLLBACK
+  Purpose:       Saves all the changes of the transaction       Cancels all the changes of the transaction
+                 permanently in all the databases.              in all the databases.
+  When used:     When every step of the transaction             When any step fails or the user cancels.
+                 succeeds.
+  Result:        Database moves to a new consistent state.      Database returns to the state before
+                                                                START TRANSACTION.
+  Consistency:   Both databases show the completed work.        No half-done work remains, so data stays
+                                                                consistent.
+
+Importance of Transaction Recovery
+Transaction recovery is the process of restoring a database to a correct and consistent state
+after a system crash, power failure or other error.
+
+Importance:
+    1. Maintains data consistency: Keeps database information correct and accurate.
+    2. Prevents data loss: Helps protect committed transactions.
+    3. UNDO operation: Cancels incomplete or uncommitted transactions.
+    4. REDO operation: Reapplies committed transactions if their changes were not fully
+    saved before a crash.
+    5. Handles system failures: Restores the database after unexpected crashes or power
+    failures.
+    6. Prevents incorrect updates: Avoids incomplete or incorrect account balance changes.
+
+ATM Example
+Suppose a customer withdraws Rs2,000 from an ATM, but suddenly the system crashes.
+  - If the transaction was committed, REDO ensures the changes are saved.
+  - If the transaction was not committed, UNDO cancels the incomplete changes.
+This helps prevent incorrect balance updates.
+
+Conclusion
+Transaction recovery is important because it protects data, handles system failures and
+maintains database consistency and reliability.
+
+ Note: This demo runs both databases on one MySQL server, so a single InnoDB instance
+ handles COMMIT and ROLLBACK. A true distributed transaction spans separate servers and
+ uses two-phase commit (MySQL XA: XA START, XA PREPARE, XA COMMIT / XA ROLLBACK).
+Q5. Star Schema and Snowflake Schema
+Q. 5. Explain Star Schema and Snowflake Schema with suitable diagrams
+or examples. Write any four differences between them based on
+dimension tables, redundancy, complexity and query performance.
+
+Star schema
+A star schema has one central fact table (Fact_Sales) joined directly to denormalized dimension
+tables. Each dimension is a single flat table, so the diagram looks like a star. It keeps data in a
+denormalized form (not normalized beyond 2NF), so city, state, category and month sit inside one
+table.
+
+[Diagram - Star Schema: the tables and relationships from the diagram above, in plain text]
+
+  Dim_Customer                      Fact_Sales                      Dim_Date
+  ------------------                ---------------------           ---------------
+  customer_id INT PK                sales_id INT PK                 date_id INT PK
+  name VARCHAR                      customer_id INT FK              order_date DATE
+  city VARCHAR                      product_id INT FK               month INT
+  state VARCHAR                     date_id INT FK                  year INT
+                                    amount DECIMAL
+
+  Dim_Product
+  ------------------
+  product_id INT PK
+  product_name VARCHAR
+  category VARCHAR
+  brand VARCHAR
+
+  Relationships (as drawn):
+    Dim_Customer (1) ---- "who bought" ---- (N) Fact_Sales
+    Dim_Product  (1) ---- "what was sold" -- (N) Fact_Sales
+    Fact_Sales   (N) ---- "when" ---------- (1) Dim_Date
+Snowflake schema
+A snowflake schema is the normalized form of the star schema. The dimension tables are split into
+sub-dimension tables (normalized up to 3NF) using foreign keys: Customer to City, Product to
+Category. The diagram looks like a snowflake.
+
+[Diagram - Snowflake Schema: the tables and relationships from the diagram above, in plain text]
+
+  Dim_Customer               Fact_Sales                   Dim_Date
+  -----------------          ---------------------        ---------------
+  customer_id PK             sales_id INT PK              date_id PK
+  name                       customer_id INT FK           order_date DATE
+  city_id FK                 product_id INT FK            month INT
+                             date_id INT FK               year INT
+  Dim_City                   amount DECIMAL
+  -----------------
+  city_id PK                 Dim_Product                  Dim_Category
+  city_name                  -----------------            -----------------
+  state_name                 product_id PK                category_id PK
+                             product_name                 category_name
+                             category_id FK
+
+  Relationships (as drawn):
+    Dim_Customer (1) ---- (N) Fact_Sales
+    Fact_Sales   (N) ---- (1) Dim_Date
+    Fact_Sales   (N) ---- (1) Dim_Product
+    Dim_City     (1) ---- (N) Dim_Customer      (Customer > City)
+    Dim_Category (1) ---- (N) Dim_Product       (Product > Category)
+
+
+
+ Dim_Customer
+ customer_id PK          1
+ name
+ city_id FK
+
+
+
+                                    N     Fact_Sales
+                                                                               Dim_Date
+ Dim_City                                 sales_id INT PK
+                                                                               date_id PK
+                                          customer_id INT FK          N    1
+ city_id PK                                                                    order_date DATE
+                                          product_id INT FK
+ city_name                                                                     month INT
+                                          date_id INT FK
+ state_name                                                                    year INT
+                                          amount DECIMAL
+
+                                                          N
+
+
+
+
+                                                          1
+
+ Dim_Category                             Dim_Product
+ category_id PK                           product_id PK
+ category_name                            product_name
+                                          category_id FK
+
+
+                               Customer > City | Product > Category
+
+
+Five differences
+
+ Basis              Star Schema                                  Snowflake Schema
+
+ Structure          One fact table surrounded by                 Dimension tables are further split into
+                    dimension tables. Looks like a star.         sub-dimensions. Looks like a
+                                                                 snowflake.
+
+ Dimension tables   Denormalized, one flat table per             Normalized (3NF), split into several
+                    dimension.                                   related tables.
+
+ Redundancy         Higher. City, state, category values         Lower. Each value is stored once in its
+                    repeat in rows.                              own table.
+
+ Storage            More space, as repeated values are           Less space, as each value is stored
+                    stored many times.                           once.
+
+ Query              Faster, fewer joins (2 joins in the          Slower, more joins (4 joins for the
+ performance        example below).                              same result).
+Example (SQL)
+Both schemas below hold the same data and give the same result.
+
+Star schema
+
+ DROP DATABASE IF EXISTS star_db;
+ CREATE DATABASE star_db;
+ USE star_db;
+
+ CREATE TABLE Dim_Customer (
+    customer_id INT PRIMARY KEY, name VARCHAR(50),
+    city VARCHAR(30), state VARCHAR(30));
+ CREATE TABLE Dim_Product (
+    product_id INT PRIMARY KEY, product_name VARCHAR(50),
+    category VARCHAR(30), brand VARCHAR(30));
+ CREATE TABLE Dim_Date (
+    date_id INT PRIMARY KEY, order_date DATE,
+    month INT, year INT);
+ CREATE TABLE Fact_Sales (
+    sales_id INT PRIMARY KEY,
+    customer_id INT, product_id INT, date_id INT, amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES Dim_Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Dim_Product(product_id),
+    FOREIGN KEY (date_id) REFERENCES Dim_Date(date_id)
+ );
+
+ INSERT INTO Dim_Customer VALUES (1,'Rahul','Pune','Maharashtra'),(2,'Amit','Bhopal','MP');
+ INSERT INTO Dim_Product VALUES (1,'Laptop','Electronics','Asus'),(2,'Pen','Stationery','Cello');
+ INSERT INTO Dim_Date VALUES (1,'2026-11-01',11,2026),(2,'2026-12-01',12,2026);
+ INSERT INTO Fact_Sales VALUES (1,1,1,1,50000),(2,2,2,2,100),(3,1,2,2,50);
+
+ SELECT * FROM Dim_Customer;
+ SELECT * FROM Dim_Product;
+ SELECT * FROM Dim_Date;
+ SELECT * FROM Fact_Sales;
+
+ SELECT
+     F.Sales_ID,
+     C.Name,
+     P.Category,
+     C.State,
+     F.Amount
+ FROM Fact_Sales F
+ JOIN Dim_Customer C ON F.Customer_ID = C.Customer_ID
+ JOIN Dim_Product P ON F.Product_ID = P.Product_ID;
+Snowflake schema
+
+ DROP DATABASE IF EXISTS snow_db;
+ CREATE DATABASE snow_db;
+ USE snow_db;
+
+ CREATE TABLE Dim_City (city_id INT PRIMARY KEY,
+    city_name VARCHAR(30), state_name VARCHAR(30));
+ CREATE TABLE Dim_Customer (customer_id INT PRIMARY KEY,
+    name VARCHAR(50), city_id INT,
+    FOREIGN KEY (city_id) REFERENCES Dim_City(city_id));
+ CREATE TABLE Dim_Category (category_id INT PRIMARY KEY, category_name VARCHAR(30));
+ CREATE TABLE Dim_Product (product_id INT PRIMARY KEY,
+    product_name VARCHAR(50), category_id INT,
+    FOREIGN KEY (category_id) REFERENCES Dim_Category(category_id));
+ CREATE TABLE Dim_Date (date_id INT PRIMARY KEY,
+    order_date DATE, month INT, year INT);
+ CREATE TABLE Fact_Sales (
+    sales_id INT PRIMARY KEY,
+    customer_id INT, product_id INT, date_id INT, amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES Dim_Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Dim_Product(product_id),
+    FOREIGN KEY (date_id) REFERENCES Dim_Date(date_id)
+ );
+
+ INSERT INTO Dim_City VALUES (1,'Pune','Maharashtra'),(2,'Bhopal','MP');
+ INSERT INTO Dim_Customer VALUES (1,'Rahul',1),(2,'Amit',2);
+ INSERT INTO Dim_Category VALUES (1,'Electronics'),(2,'Stationery');
+ INSERT INTO Dim_Product VALUES (1,'Laptop',1),(2,'Pen',2);
+ INSERT INTO Dim_Date VALUES (1,'2026-11-01',11,2026),(2,'2026-12-01',12,2026);
+ INSERT INTO Fact_Sales VALUES (1,1,1,1,50000),(2,2,2,2,100),(3,1,2,2,50);
+
+ SELECT * FROM Dim_City;
+ SELECT * FROM Dim_Customer;
+ SELECT * FROM Dim_Category;
+ SELECT * FROM Dim_Product;
+ SELECT * FROM Dim_Date;
+ SELECT * FROM Fact_Sales;
+
+ SELECT
+     F.Sales_ID,
+     C.Name,
+     Cat.Category_Name,
+     Ci.State_Name,
+     F.Amount
+ FROM Fact_Sales F
+ JOIN Dim_Customer C ON F.Customer_ID = C.Customer_ID
+ JOIN Dim_City Ci ON C.City_ID = Ci.City_ID
+ JOIN Dim_Product P ON F.Product_ID = P.Product_ID
+ JOIN Dim_Category Cat ON P.Category_ID = Cat.Category_ID;
+ Q.6. Consider a STUDENT table with columns Roll_No, Student_Name,
+ Department, City and Marks. Write SQL queries to (a) display all student
+ records, (b) find the maximum marks, and (c) display the average marks
+ department-wise. Briefly explain how OLAP supports multidimensional
+ analysis of student data.
+
+ANS:
+
+1. Complete SQL Code
+
+ -- Step 1: Create database
+ CREATE DATABASE CollegeDB;
+ USE CollegeDB;
+
+ -- Step 2: Create STUDENT table
+ CREATE TABLE STUDENT (
+     Roll_No INT PRIMARY KEY,
+     Student_Name VARCHAR(50),
+     Department VARCHAR(50),
+     City VARCHAR(50),
+     Marks INT
+ );
+
+ -- Step 3: Insert sample records
+ INSERT INTO STUDENT VALUES
+ (1, 'Rahul', 'IT', 'Pune', 85),
+ (2, 'Amit', 'Computer', 'Mumbai', 90),
+ (3, 'Priya', 'IT', 'Pune', 75),
+ (4, 'Sneha', 'Computer', 'Delhi', 80),
+ (5, 'Rohan', 'ENTC', 'Nashik', 95);
+
+ -- (a) Display all student records
+ SELECT * FROM STUDENT;
+
+ -- (b) Find maximum marks
+ SELECT MAX(Marks) AS Maximum_Marks
+ FROM STUDENT;
+
+ -- (c) Display average marks department-wise
+ SELECT Department, AVG(Marks) AS Average_Marks
+ FROM STUDENT
+ GROUP BY Department;
+
+
+
+
+ANS:
+OLAP (Online Analytical Processing) is used to analyse student data from different
+perspectives or dimensions, such as students, subjects, semesters and departments.
+It helps colleges understand and compare academic performance.
+
+Example:
+
+A college can use OLAP to:
+    1. Student-wise analysis: Analyse individual student marks.
+    2. Subject-wise analysis: Calculate average marks in each subject.
+    3. Semester-wise analysis: Compare results across different semesters.
+    4. Department-wise analysis: Compare the performance of different departments.
+    5. Performance analysis: Identify students with low or high marks.
+OLAP Operations
+ Operation                     Meaning                        Student Example
+
+ Roll-up                       Summarizes data                Average marks
+                                                              department-wise
+
+ Drill-down                    Shows detailed data            Department-wise to
+                                                              student-wise marks
+
+ Slice                         Selects one condition          Semester 5 results
+
+ Dice                          Selects multiple conditions    IT students' DBMS results in
+                                                              Semester 5
+
+
+ Pivot                         Changes data view              Compare subjects across
+                                                              semesters
+
+
+SQL Example
+ SELECT Department, AVG(Marks) AS Average_Marks
+ FROM STUDENT
+ GROUP BY Department;
+
+This query calculates the average marks of each department.
+
+Conclusion
+OLAP supports multidimensional analysis by allowing colleges to analyse student
+performance based on different dimensions. It helps identify weak areas, compare results
+and make better academic decisions.
+
