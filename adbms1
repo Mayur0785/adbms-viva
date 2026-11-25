@@ -1,0 +1,530 @@
+                                     SET 1
+Q. 1. Create a STUDENT table using range or hash partitioning based on
+the student marks or department. Perform DML operations such as
+INSERT, UPDATE and DELETE on the partitioned table. Retrieve and
+display records from each partition separately using suitable SQL
+queries. Explain the working of partition-wise data storage.
+
+ANS :-
+-- Step 1: Create Database
+CREATE DATABASE studentdb;
+
+-- Step 2: Select Database
+USE studentdb;
+
+-- Step 3: Create Partitioned STUDENT Table
+CREATE TABLE STUDENT (
+    student_id INT NOT NULL,
+    name VARCHAR(50),
+    marks INT NOT NULL,
+    PRIMARY KEY (student_id, marks)
+)
+PARTITION BY RANGE (marks) (
+    PARTITION P0 VALUES LESS THAN (40),
+    PARTITION P1 VALUES LESS THAN (60),
+    PARTITION P2 VALUES LESS THAN (80),
+    PARTITION P3 VALUES LESS THAN (101)
+);
+
+-- Step 4: Insert Records
+INSERT INTO STUDENT VALUES
+(1, 'Rahul', 20),
+(2, 'Amit', 30),
+(3, 'Priya', 40),
+(4, 'Sneha', 50),
+(5, 'Rohan', 60),
+(6, 'Neha', 70),
+(7, 'Karan', 80),
+(8, 'Pooja', 90);
+
+-- Step 5: Display All Records
+SELECT * FROM STUDENT;
+
+-- Step 6: Display Records from Each Partition
+SELECT * FROM STUDENT PARTITION (P0);
+SELECT * FROM STUDENT PARTITION (P1);
+SELECT * FROM STUDENT PARTITION (P2);
+SELECT * FROM STUDENT PARTITION (P3);
+
+-- Step 7: UPDATE Operation
+UPDATE STUDENT
+SET marks = 55
+WHERE student_id = 3;
+
+-- Step 8: DELETE Operation
+DELETE FROM STUDENT
+WHERE student_id = 2;
+ -- Step 9: Display Updated Table
+ SELECT * FROM STUDENT;
+
+ -- Step 10: Display Partition Information
+ SELECT
+     PARTITION_NAME,
+     TABLE_ROWS
+ FROM INFORMATION_SCHEMA.PARTITIONS
+ WHERE TABLE_SCHEMA = 'studentdb'
+ AND TABLE_NAME = 'STUDENT';
+
+
+Working of Partition-Wise Data Storage
+
+Exam-ready answer:
+Partitioning is a technique used to divide a large table into smaller parts called partitions.
+In range partitioning, data is divided based on a specific range of values.
+In this practical, we created a STUDENT table and divided it into four partitions based on
+student marks.
+  - P0 stores students having marks below 40.
+  - P1 stores students having marks from 40 to 59.
+  - P2 stores students having marks from 60 to 79.
+  - P3 stores students having marks from 80 to 100.
+When we insert a new student, the database automatically stores the record in the correct
+partition.
+We can retrieve records from individual partitions using SELECT queries.
+
+Advantages:
+    1. Improves data management.
+    2. Makes searching specific ranges more efficient.
+    3. Makes large tables easier to manage.
+    4. Supports partition-level maintenance.
+
+ Q. 2. Explain distributed transactions with a simple bank money-transfer
+ example. Describe the purpose of COMMIT and ROLLBACK and explain
+ why transaction recovery is required.
+
+    1. Distributed transaction A distributed transaction is a single transaction that updates
+    data stored in more than one database or site. All the parts must succeed together or fail
+    together. Example: Rahul (Bank1) transfers Rs 1,000 to Amit (Bank2). The debit happens
+    in Bank1 and the credit in Bank2, so both databases take part in one transaction.
+
+1. Full SQL Code
+Example: Rahul wants to transfer Rs1,000 from his account to Amit's account.
+  - Rahul's account balance = Rs5,000
+  - Amit's account balance = Rs3,000
+  - Transfer amount = Rs1,000
+After successful transfer:
+ - Rahul = Rs4,000
+ - Amit = Rs4,000
+
+ANS:
+-- STEP 1: Create two databases
+CREATE DATABASE Bank1;
+CREATE DATABASE Bank2;
+
+-- STEP 2: Select Bank1
+USE Bank1;
+
+-- STEP 3: Create Account table in Bank1
+CREATE TABLE Account (
+    account_no INT PRIMARY KEY,
+    name VARCHAR(50),
+    balance INT
+);
+
+-- STEP 4: Insert Rahul's account
+INSERT INTO Account VALUES
+(101, 'Rahul', 5000);
+
+-- STEP 5: Create Account table in Bank2
+USE Bank2;
+CREATE TABLE Account (
+    account_no INT PRIMARY KEY,
+    name VARCHAR(50),
+    balance INT
+);
+
+-- STEP 6: Insert Amit's account
+INSERT INTO Account VALUES
+(102, 'Amit', 3000);
+
+-- STEP 7: Start Transaction
+START TRANSACTION;
+
+-- STEP 8: Deduct money from Rahul's account
+UPDATE Bank1.Account
+SET balance = balance - 1000
+WHERE account_no = 101;
+
+-- STEP 9: Add money to Amit's account
+UPDATE Bank2.Account
+SET balance = balance + 1000
+WHERE account_no = 102;
+
+-- STEP 10: Verify balances before commit
+SELECT * FROM Bank1.Account;
+SELECT * FROM Bank2.Account;
+
+-- STEP 11: Save the transaction
+COMMIT;
+
+-- STEP 12: Display final balances
+SELECT * FROM Bank1.Account;
+SELECT * FROM Bank2.Account;
+2. Purpose of COMMIT and ROLLBACK
+
+ Command     Purpose
+ COMMIT      Makes all changes of the transaction permanent in the database. Used when every
+             step succeeded. After COMMIT the change cannot be undone.
+ ROLLBACK    Cancels all changes made since the transaction began and restores the old values.
+             Used when any step fails, so money is never debited without being credited.
+
+3. Why transaction recovery is required
+Failures happen at any time. A power cut, system crash, network failure or deadlock
+can stop a transaction in the middle.
+
+Suppose Rahul sends Rs1,000 to Amit. During this transaction, the system may face
+problems like a power cut, system crash or network failure.
+
+1. Atomicity (Complete or Nothing)
+   The transaction must complete fully or not happen at all.
+   Example: If Rs1,000 is deducted from Rahul but not added to Amit, the system will return
+   the money to Rahul.
+
+2. Consistency (Database remains Correct)
+   The database should always remain correct and valid.
+   Example: Money should not disappear, and a seat should not be booked without
+   payment.
+
+3. Durability (Changes are Permanent)
+   Once a transaction is successfully completed, its changes should be saved permanently.
+   Example: Once Rahul sends Rs1,000 to Amit, the money transfer should remain saved
+   even if the system crashes.
+
+4. Reliability in Distributed Systems
+   All connected databases should have the same correct information.
+   Example: If one bank system completes the transaction but another system fails,
+   recovery makes sure that all systems finally agree on whether the transaction was
+   completed or cancelled.
+
+ Note: This demo runs both databases on one MySQL server, so a single InnoDB instance
+ handles COMMIT and ROLLBACK. A true distributed transaction spans separate servers and
+ uses two-phase commit (MySQL XA: XA START, XA PREPARE, XA COMMIT / XA ROLLBACK).
+Q5. Star Schema and Snowflake Schema
+Q.5. Differentiate between Star Schema and Snowflake Schema with a
+suitable diagram or example. Write any four differences.
+
+Star schema
+A star schema has one central fact table (Fact_Sales) joined directly to denormalized dimension
+tables. Each dimension is a single flat table, so the diagram looks like a star. It keeps data in a
+denormalized form (not normalized beyond 2NF), so city, state, category and month sit inside one
+table.
+
+[Diagram - Star Schema: the tables and relationships from the diagram above, in plain text]
+
+  Dim_Customer                      Fact_Sales                      Dim_Date
+  ------------------                ---------------------           ---------------
+  customer_id INT PK                sales_id INT PK                 date_id INT PK
+  name VARCHAR                      customer_id INT FK              order_date DATE
+  city VARCHAR                      product_id INT FK               month INT
+  state VARCHAR                     date_id INT FK                  year INT
+                                    amount DECIMAL
+
+  Dim_Product
+  ------------------
+  product_id INT PK
+  product_name VARCHAR
+  category VARCHAR
+  brand VARCHAR
+
+  Relationships (as drawn):
+    Dim_Customer (1) ---- "who bought" ---- (N) Fact_Sales
+    Dim_Product  (1) ---- "what was sold" -- (N) Fact_Sales
+    Fact_Sales   (N) ---- "when" ---------- (1) Dim_Date
+
+
+
+ Dim_Customer
+ customer_id INT PK            who bought
+                           1
+ name VARCHAR
+ city VARCHAR
+ state VARCHAR
+
+                                    N       Fact_Sales                      Dim_Date
+                                            sales_id INT PK                 date_id INT PK
+                                            customer_id INT FK   N      1   order_date DATE
+                                            product_id INT FK
+                                                                 when       month INT
+                                            date_id INT FK                  year INT
+                                            amount DECIMAL
+ Dim_Product                        N
+ product_id INT PK         1
+ product_name VARCHAR
+                           what was sold
+ category VARCHAR
+ brand VARCHAR
+Snowflake schema
+A snowflake schema is the normalized form of the star schema. The dimension tables are split into
+sub-dimension tables (normalized up to 3NF) using foreign keys: Customer to City, Product to
+Category. The diagram looks like a snowflake.
+
+[Diagram - Snowflake Schema: the tables and relationships from the diagram above, in plain text]
+
+  Dim_Customer               Fact_Sales                   Dim_Date
+  -----------------          ---------------------        ---------------
+  customer_id PK             sales_id INT PK              date_id PK
+  name                       customer_id INT FK           order_date DATE
+  city_id FK                 product_id INT FK            month INT
+                             date_id INT FK               year INT
+  Dim_City                   amount DECIMAL
+  -----------------
+  city_id PK                 Dim_Product                  Dim_Category
+  city_name                  -----------------            -----------------
+  state_name                 product_id PK                category_id PK
+                             product_name                 category_name
+                             category_id FK
+
+  Relationships (as drawn):
+    Dim_Customer (1) ---- (N) Fact_Sales
+    Fact_Sales   (N) ---- (1) Dim_Date
+    Fact_Sales   (N) ---- (1) Dim_Product
+    Dim_City     (1) ---- (N) Dim_Customer      (Customer > City)
+    Dim_Category (1) ---- (N) Dim_Product       (Product > Category)
+
+
+
+ Dim_Customer
+ customer_id PK          1
+ name
+ city_id FK
+
+
+
+                                    N     Fact_Sales
+                                                                               Dim_Date
+ Dim_City                                 sales_id INT PK
+                                                                               date_id PK
+                                          customer_id INT FK          N    1
+ city_id PK                                                                    order_date DATE
+                                          product_id INT FK
+ city_name                                                                     month INT
+                                          date_id INT FK
+ state_name                                                                    year INT
+                                          amount DECIMAL
+
+                                                          N
+
+
+
+
+                                                          1
+
+ Dim_Category                             Dim_Product
+ category_id PK                           product_id PK
+ category_name                            product_name
+                                          category_id FK
+
+
+                               Customer > City | Product > Category
+
+
+Five differences
+
+ Basis              Star Schema                                  Snowflake Schema
+
+ Structure          One fact table surrounded by                 Dimension tables are further split into
+                    dimension tables. Looks like a star.         sub-dimensions. Looks like a
+                                                                 snowflake.
+
+ Dimension tables   Denormalized, one flat table per             Normalized (3NF), split into several
+                    dimension.                                   related tables.
+
+ Redundancy         Higher. City, state, category values         Lower. Each value is stored once in its
+                    repeat in rows.                              own table.
+
+ Storage            More space, as repeated values are           Less space, as each value is stored
+                    stored many times.                           once.
+
+ Query              Faster, fewer joins (2 joins in the          Slower, more joins (4 joins for the
+ performance        example below).                              same result).
+Example (SQL)
+Both schemas below hold the same data and give the same result.
+
+Star schema
+
+ DROP DATABASE IF EXISTS star_db;
+ CREATE DATABASE star_db;
+ USE star_db;
+
+ CREATE TABLE Dim_Customer (
+    customer_id INT PRIMARY KEY, name VARCHAR(50),
+    city VARCHAR(30), state VARCHAR(30));
+ CREATE TABLE Dim_Product (
+    product_id INT PRIMARY KEY, product_name VARCHAR(50),
+    category VARCHAR(30), brand VARCHAR(30));
+ CREATE TABLE Dim_Date (
+    date_id INT PRIMARY KEY, order_date DATE,
+    month INT, year INT);
+ CREATE TABLE Fact_Sales (
+    sales_id INT PRIMARY KEY,
+    customer_id INT, product_id INT, date_id INT, amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES Dim_Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Dim_Product(product_id),
+    FOREIGN KEY (date_id) REFERENCES Dim_Date(date_id)
+ );
+
+ INSERT INTO Dim_Customer VALUES (1,'Rahul','Pune','Maharashtra'),(2,'Amit','Bhopal','MP');
+ INSERT INTO Dim_Product VALUES (1,'Laptop','Electronics','Asus'),(2,'Pen','Stationery','Cello');
+ INSERT INTO Dim_Date VALUES (1,'2026-11-01',11,2026),(2,'2026-12-01',12,2026);
+ INSERT INTO Fact_Sales VALUES (1,1,1,1,50000),(2,2,2,2,100),(3,1,2,2,50);
+
+ SELECT * FROM Dim_Customer;
+ SELECT * FROM Dim_Product;
+ SELECT * FROM Dim_Date;
+ SELECT * FROM Fact_Sales;
+
+ SELECT
+     F.Sales_ID,
+     C.Name,
+     P.Category,
+     C.State,
+     F.Amount
+ FROM Fact_Sales F
+ JOIN Dim_Customer C ON F.Customer_ID = C.Customer_ID
+ JOIN Dim_Product P ON F.Product_ID = P.Product_ID;
+Snowflake schema
+
+ DROP DATABASE IF EXISTS snow_db;
+ CREATE DATABASE snow_db;
+ USE snow_db;
+
+ CREATE TABLE Dim_City (city_id INT PRIMARY KEY,
+    city_name VARCHAR(30), state_name VARCHAR(30));
+ CREATE TABLE Dim_Customer (customer_id INT PRIMARY KEY,
+    name VARCHAR(50), city_id INT,
+    FOREIGN KEY (city_id) REFERENCES Dim_City(city_id));
+ CREATE TABLE Dim_Category (category_id INT PRIMARY KEY, category_name VARCHAR(30));
+ CREATE TABLE Dim_Product (product_id INT PRIMARY KEY,
+    product_name VARCHAR(50), category_id INT,
+    FOREIGN KEY (category_id) REFERENCES Dim_Category(category_id));
+ CREATE TABLE Dim_Date (date_id INT PRIMARY KEY,
+    order_date DATE, month INT, year INT);
+ CREATE TABLE Fact_Sales (
+    sales_id INT PRIMARY KEY,
+    customer_id INT, product_id INT, date_id INT, amount DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES Dim_Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Dim_Product(product_id),
+    FOREIGN KEY (date_id) REFERENCES Dim_Date(date_id)
+ );
+
+ INSERT INTO Dim_City VALUES (1,'Pune','Maharashtra'),(2,'Bhopal','MP');
+ INSERT INTO Dim_Customer VALUES (1,'Rahul',1),(2,'Amit',2);
+ INSERT INTO Dim_Category VALUES (1,'Electronics'),(2,'Stationery');
+ INSERT INTO Dim_Product VALUES (1,'Laptop',1),(2,'Pen',2);
+ INSERT INTO Dim_Date VALUES (1,'2026-11-01',11,2026),(2,'2026-12-01',12,2026);
+ INSERT INTO Fact_Sales VALUES (1,1,1,1,50000),(2,2,2,2,100),(3,1,2,2,50);
+
+ SELECT * FROM Dim_City;
+ SELECT * FROM Dim_Customer;
+ SELECT * FROM Dim_Category;
+ SELECT * FROM Dim_Product;
+ SELECT * FROM Dim_Date;
+ SELECT * FROM Fact_Sales;
+
+ SELECT
+     F.Sales_ID,
+     C.Name,
+     Cat.Category_Name,
+     Ci.State_Name,
+     F.Amount
+ FROM Fact_Sales F
+ JOIN Dim_Customer C ON F.Customer_ID = C.Customer_ID
+ JOIN Dim_City Ci ON C.City_ID = Ci.City_ID
+ JOIN Dim_Product P ON F.Product_ID = P.Product_ID
+ JOIN Dim_Category Cat ON P.Category_ID = Cat.Category_ID;
+ Q. 6. Consider a SALES table with columns Sale_ID, Product_Name,
+ Quantity and Amount. Write SQL queries to (a) display all sales records,
+ (b) calculate the total sales amount, and (c) display the total sales
+ amount product-wise. Briefly explain the role of OLAP in analysing sales
+ data.
+
+2. Full SQL Code
+You can write and execute this complete code in your practical exam.
+ -- Step 1: Create Database
+ CREATE DATABASE SalesDB;
+
+ -- Step 2: Select Database
+ USE SalesDB;
+
+ -- Step 3: Create SALES Table
+ CREATE TABLE SALES (
+     Sale_ID INT PRIMARY KEY,
+     Product_Name VARCHAR(50),
+     Quantity INT,
+     Amount DECIMAL(10,2)
+ );
+
+ -- Step 4: Insert Records
+ INSERT INTO SALES VALUES
+ (1, 'Laptop', 2, 80000),
+ (2, 'Mobile', 3, 45000),
+ (3, 'Laptop', 1, 40000),
+ (4, 'Keyboard', 5, 5000),
+ (5, 'Mobile', 2, 30000);
+
+ -- (a) Display all sales records
+ SELECT * FROM SALES;
+
+ -- (b) Calculate total sales amount
+ SELECT SUM(Amount) AS Total_Sales
+ FROM SALES;
+
+ -- (c) Display product-wise total sales
+ SELECT Product_Name,
+        SUM(Amount) AS Total_Sales
+ FROM SALES
+ GROUP BY Product_Name;
+
+
+3. Expected Output
+
+(a) Display all sales records
+ Sale_ID                Product_Name            Quantity            Amount
+
+ 1                      Laptop                  2                   80000
+
+ 2                      Mobile                  3                   45000
+
+ 3                      Laptop                  1                   40000
+
+ 4                      Keyboard                5                   5000
+
+ 5                      Mobile                  2                   30000
+
+
+(b) Calculate total sales amount
+ Total_Sales
+ -----------
+ 200000
+
+
+(c) Product-wise total sales
+ Product_Name                                   Total_Sales
+
+ Laptop                                         120000
+
+ Mobile                                         75000
+
+ Keyboard                                       5000
+
+
+Role of OLAP in Analysing Sales Data
+OLAP stands for Online Analytical Processing.
+OLAP is used to analyse large amounts of sales data and help businesses make better
+decisions.
+Uses of OLAP:
+    1. Total Sales: Calculates the total sales of a company.
+    2. Product-wise Sales: Identifies which product has the highest sales.
+    3. Monthly Sales: Compares sales month-wise or year-wise.
+    4. Decision Making: Helps businesses understand sales performance and make better
+    decisions.
+
+Four OLAP Operations:
+ - Roll-up: Shows summarized data.
+ - Drill-down: Shows detailed data.
+ - Slice: Selects a particular part of data.
+ - Dice: Selects data using multiple conditions.
+Example: A company uses OLAP to find which product sells the most and in which month
+sales are highest.
+Conclusion: OLAP helps businesses analyse sales data easily and make better business
+decisions.
+
